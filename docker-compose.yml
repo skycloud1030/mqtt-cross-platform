@@ -1,0 +1,46 @@
+version: "3.7"
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    restart: always
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    ports:
+      - 9001:9001
+    networks:
+      - mqtt-net
+  client:
+    depends_on:
+      - mosquitto
+    build: ./client
+    image: mosquitto/clients
+    restart: always
+    stdin_open: true
+    tty: true
+    networks:
+      - mqtt-net
+  node:
+    depends_on:
+      - mosquitto
+    build: ./node
+    image: mosquitto/node
+    restart: always
+    stdin_open: true
+    tty: true
+    networks:
+      - mqtt-net
+  nginx:
+    image: nginx:latest
+    restart: always
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./web:/var/www/web/public
+      - ./conf.d:/etc/nginx/conf.d
+    ports:
+      - 9002:80
+  
+networks:
+  mqtt-net:
